@@ -1,29 +1,21 @@
-output "arn" {
-  description = "ARN of the lambda function"
-  value       = local.enabled ? aws_lambda_function.this[0].arn : null
+output "lambda_function_arn" {
+  description = "The ARN of the Lambda Function"
+  value       = aws_lambda_function.lambda.arn
 }
 
-output "invoke_arn" {
-  description = "Invoke ARN of the lambda function"
-  value       = local.enabled ? aws_lambda_function.this[0].invoke_arn : null
+output "lambda_function_name" {
+  description = "The name of the Lambda Function"
+  value       = aws_lambda_function.lambda.function_name
 }
 
-output "qualified_arn" {
-  description = "ARN identifying your Lambda Function Version (if versioning is enabled via publish = true)"
-  value       = local.enabled ? aws_lambda_function.this[0].qualified_arn : null
+
+output "lambda_role_arn" {
+  description = "The ARN of the IAM role created for the Lambda Function"
+  value       = aws_iam_role.lambda.arn
 }
 
-output "function_name" {
-  description = "Lambda function name"
-  value       = local.enabled ? aws_lambda_function.this[0].function_name : null
+output "lambda_role_name" {
+  description = "The name of the IAM role created for the Lambda Function"
+  value       = aws_iam_role.lambda.name
 }
 
-output "role_name" {
-  description = "Lambda IAM role name"
-  value       = local.enabled ? aws_iam_role.this[0].name : null
-}
-
-output "role_arn" {
-  description = "Lambda IAM role ARN"
-  value       = local.enabled ? aws_iam_role.this[0].arn : null
-}

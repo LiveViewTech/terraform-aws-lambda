@@ -1,63 +1,6 @@
-variable "architectures" {
-  type        = list(string)
-  description = <<EOF
-    Instruction set architecture for your Lambda function. Valid values are ["x86_64"] and ["arm64"].
-    Default is ["x86_64"]. Removing this attribute, function's architecture stay the same.
-  EOF
-  default     = null
-}
-
-variable "cloudwatch_event_rules" {
-  type        = map(any)
-  description = "Creates EventBridge (CloudWatch Events) rules for invoking the Lambda Function along with the required permissions."
-  default     = {}
-}
-
-variable "cloudwatch_lambda_insights_enabled" {
-  type        = bool
-  description = "Enable CloudWatch Lambda Insights for the Lambda Function."
-  default     = false
-}
-
-variable "cloudwatch_logs_retention_in_days" {
-  type        = number
-  description = "Cloudwatch log group retention days"
-  default     = 120
-}
-
-variable "cloudwatch_logs_kms_key_arn" {
+variable "function_name" {
   type        = string
-  description = "The ARN of the KMS Key to use when encrypting log data."
-  default     = null
-}
-
-variable "cloudwatch_log_subscription_filters" {
-  type        = map(any)
-  description = "CloudWatch Logs subscription filter resources. Currently supports only Lambda functions as destinations."
-  default     = {}
-}
-
-variable "description" {
-  type        = string
-  description = "Description of what the Lambda Function does."
-  default     = null
-}
-
-variable "lambda_environment" {
-  type = object({
-    variables = map(string)
-  })
-  description = "Environment (e.g. env variables) configuration for the Lambda function enable you to dynamically pass settings to your function code and libraries."
-  default     = null
-}
-
-variable "event_source_mappings" {
-  type        = any
-  description = <<EOF
-  Creates event source mappings to allow the Lambda function to get events from Kinesis, DynamoDB and SQS. The IAM role
-  of this Lambda function will be enhanced with necessary minimum permissions to get those events.
-  EOF
-  default     = {}
+  description = "Application name to name your Fargate Component and other resources. Must be <= 24 characters."
 }
 
 variable "filename" {
@@ -66,73 +9,6 @@ variable "filename" {
   default     = null
 }
 
-variable "function_name" {
-  type        = string
-  description = "Unique name for the Lambda Function."
-}
-
-variable "ignore_external_function_updates" {
-  type        = bool
-  description = <<EOF
-  Ignore updates to the Lambda Function executed externally to the Terraform lifecycle. Set this to `true` if you're
-  using CodeDeploy, aws CLI or other external tools to update the Lambda Function code."
-  EOF
-  default     = false
-}
-
-variable "handler" {
-  type        = string
-  description = "The function entrypoint in your code."
-  default     = null
-}
-
-variable "image_config" {
-  type        = any
-  description = <<EOF
-  The Lambda OCI [image configurations](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function#image_config)
-  block with three (optional) arguments:
-  - *entry_point* - The ENTRYPOINT for the docker image (type `list(string)`).
-  - *command* - The CMD for the docker image (type `list(string)`).
-  - *working_directory* - The working directory for the docker image (type `string`).
-  EOF
-  default     = {}
-}
-
-variable "image_uri" {
-  type        = string
-  description = "The ECR image URI containing the function's deployment package. Conflicts with filename, s3_bucket, s3_key, and s3_object_version."
-  default     = null
-}
-
-variable "kms_key_arn" {
-  type        = string
-  description = <<EOF
-  Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables.
-  If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key.
-  If this configuration is provided when environment variables are not in use, the AWS Lambda API does not save this
-  configuration and Terraform will show a perpetual difference of adding the key. To fix the perpetual difference,
-  remove this configuration.
-  EOF
-  default     = ""
-}
-
-variable "lambda_at_edge_enabled" {
-  type        = bool
-  description = "Enable Lambda@Edge for your Node.js or Python functions. The required trust relationship and publishing of function versions will be configured in this module."
-  default     = false
-}
-
-variable "layers" {
-  type        = list(string)
-  description = "List of Lambda Layer Version ARNs (maximum of 5) to attach to the Lambda Function."
-  default     = []
-}
-
-variable "memory_size" {
-  type        = number
-  description = "Amount of memory in MB the Lambda Function can use at runtime."
-  default     = 128
-}
 
 variable "package_type" {
   type        = string
@@ -140,110 +16,81 @@ variable "package_type" {
   default     = "Zip"
 }
 
-variable "permissions_boundary" {
+variable "description" {
+  description = "Description of your Lambda Function (or Layer)"
   type        = string
   default     = ""
-  description = "ARN of the policy that is used to set the permissions boundary for the role"
 }
 
-variable "publish" {
-  type        = bool
-  description = "Whether to publish creation/change as new Lambda Function Version."
-  default     = false
-}
-
-variable "reserved_concurrent_executions" {
+variable "memory_size" {
+  description = "Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments."
   type        = number
-  description = "The amount of reserved concurrent executions for this lambda function. A value of 0 disables lambda from being triggered and -1 removes any concurrency limitations."
-  default     = -1
-}
-
-variable "runtime" {
-  type        = string
-  description = "The runtime environment for the Lambda function you are uploading."
-  default     = null
-}
-
-variable "s3_bucket" {
-  type        = string
-  description = <<EOF
-  The S3 bucket location containing the function's deployment package. Conflicts with filename and image_uri.
-  This bucket must reside in the same AWS region where you are creating the Lambda function.
-  EOF
-  default     = null
-}
-
-variable "s3_key" {
-  type        = string
-  description = "The S3 key of an object containing the function's deployment package. Conflicts with filename and image_uri."
-  default     = null
-}
-
-variable "s3_object_version" {
-  type        = string
-  description = "The object version containing the function's deployment package. Conflicts with filename and image_uri."
-  default     = null
-}
-
-variable "sns_subscriptions" {
-  type        = map(any)
-  description = "Creates subscriptions to SNS topics which trigger the Lambda Function. Required Lambda invocation permissions will be generated."
-  default     = {}
-}
-
-variable "source_code_hash" {
-  type        = string
-  description = <<EOF
-  Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either
-  filename or s3_key. The usual way to set this is filebase64sha256('file.zip') where 'file.zip' is the local filename
-  of the lambda function source archive.
-  EOF
-  default     = ""
-}
-
-variable "ssm_parameter_names" {
-  type        = list(string)
-  description = <<EOF
-  List of AWS Systems Manager Parameter Store parameter names. The IAM role of this Lambda function will be enhanced
-  with read permissions for those parameters. Parameters must start with a forward slash and can be encrypted with the
-  default KMS key.
-  EOF
-  default     = null
+  default     = 128
 }
 
 variable "timeout" {
+  description = "The amount of time your Lambda Function has to run in seconds."
   type        = number
-  description = "The amount of time the Lambda Function has to run in seconds."
-  default     = 3
+  default     = 30
 }
 
-variable "tracing_config_mode" {
-  type        = string
-  description = "Tracing config mode of the Lambda function. Can be either PassThrough or Active."
-  default     = null
-}
 
-variable "vpc_config" {
-  type = object({
-    security_group_ids = list(string)
-    subnet_ids         = list(string)
-  })
-  description = <<EOF
-  Provide this to allow your function to access your VPC (if both 'subnet_ids' and 'security_group_ids' are empty then
-  vpc_config is considered to be empty or unset, see https://docs.aws.amazon.com/lambda/latest/dg/vpc.html for details).
-  EOF
-  default     = null
-}
 
-variable "custom_iam_policy_arns" {
-  type        = set(string)
-  description = "ARNs of custom policies to be attached to the lambda role"
+variable "security_groups" {
+  type        = list(string)
+  description = "List of extra security group IDs to attach to the fargate task."
   default     = []
 }
-
-
-variable "iam_policy_description" {
+variable "vpc_id" {
   type        = string
-  description = "Description of the IAM policy for the Lambda IAM role"
-  default     = "Provides minimum SSM read permissions."
+  description = "VPC ID to deploy ECS fargate service."
+  default    = ""
+}
+
+variable "role_permissions_boundary_arn" {
+  type        = string
+  description = "ARN of the IAM Role permissions boundary to place on each IAM role created."
+}
+
+variable "image_uri" {
+  type        = string
+  description = "VPC ID to deploy ECS fargate service."
+}
+variable "private_subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs for the fargate service."
+}
+
+variable "log_retention_in_days" {
+  type        = number
+  description = "CloudWatch log group retention in days. Defaults to 120."
+  default     = 120
+}
+variable "tags" {
+  type        = map(string)
+  description = "A map of AWS Tags to attach to each resource created"
+  default     = {}
+}
+
+variable "interval" {
+  type    = string
+  default = "10 minutes"
+
+  description = "the time between invocations"
+}
+
+variable "environment_variables" {
+  description = "A map that defines environment variables for the Lambda Function."
+  type        = map(string)
+  default     = {}
+}
+
+variable "secret_name" {
+  description = "A map that defines environment variables for the Lambda Function."
+  type        = map(string)
+  default     = {}
+}
+variable "parameters" {
+  type = map(string)
+  default = {}
 }
