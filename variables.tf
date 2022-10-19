@@ -1,3 +1,12 @@
+variable "architectures" {
+  type        = list(string)
+  description = <<EOF
+    Instruction set architecture for your Lambda function. Valid values are ["x86_64"] and ["arm64"].
+    Default is ["x86_64"]. Removing this attribute, function's architecture stay the same.
+  EOF
+  default     = null
+}
+
 variable "function_name" {
   type        = string
   description = "Application name to name your Fargate Component and other resources. Must be <= 24 characters."
@@ -6,6 +15,12 @@ variable "function_name" {
 variable "filename" {
   type        = string
   description = "The path to the function's deployment package within the local filesystem. If defined, The s3_-prefixed options and image_uri cannot be used."
+  default     = null
+}
+
+variable "handler" {
+  type        = string
+  description = "The function entrypoint in your code."
   default     = null
 }
 
@@ -28,14 +43,25 @@ variable "memory_size" {
   default     = 128
 }
 
+variable "layers" {
+  type        = list(string)
+  description = "List of Lambda Layer Version ARNs (maximum of 5) to attach to the Lambda Function."
+  default     = []
+}
+
+
+variable "kms_key_arn" {
+  type        = string
+  description = " Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables."
+  default     = ""
+}
+
+
 variable "timeout" {
   description = "The amount of time your Lambda Function has to run in seconds."
   type        = number
   default     = 30
 }
-
-
-
 variable "security_groups" {
   type        = list(string)
   description = "List of extra security group IDs to attach to the fargate task."
@@ -54,7 +80,7 @@ variable "role_permissions_boundary_arn" {
 
 variable "image_uri" {
   type        = string
-  description = "VPC ID to deploy ECS fargate service."
+  description = "The ECR image URI containing the function's deployment package."
 }
 variable "private_subnet_ids" {
   type        = list(string)
@@ -85,12 +111,3 @@ variable "environment_variables" {
   default     = {}
 }
 
-variable "secret_name" {
-  description = "A map that defines environment variables for the Lambda Function."
-  type        = map(string)
-  default     = {}
-}
-variable "parameters" {
-  type = map(string)
-  default = {}
-}

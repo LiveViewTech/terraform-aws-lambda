@@ -10,34 +10,37 @@ data "aws_region" "current" {}
 
 
 locals {
-  function_name = var.function_name 
-  # volumes = distinct(flatten([
-  #   for def in local.definitions :
-  #   def.efs_volume_mounts != null ? def.efs_volume_mounts : []  
-  # ]))
-  ssm_parameters = distinct(flatten([values(var.environment_variables)]))
+  secrets =[for k,v in var.environment_variables: v if length(regexall("^SSM", k)) > 0 ]
+  function_name = local.secrets_arns 
+  ssm_parameters = distinct(flatten((local.secrets_arns)))
   has_secrets            = length(local.ssm_parameters) > 0
   ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
   secrets_arns = [
     for param in local.ssm_parameters :
-    "${local.ssm_parameter_arn_base}${replace(param,  "/^//", "")}"
+    # concat(local.ssm_parameter_arn_base,param)
+    "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
   ]
+  
+
   cloudwatch_log_group_name = "/lambda/${var.function_name}"
 }
+
+
+# == Lambda Function == #
 resource "aws_lambda_function" "lambda" {
 
-  #architectures                  = var.architectures
+  architectures                  = var.architectures
   description                    = var.description
-  #filename                       = var.filename
+  filename                       = var.filename
   function_name                  = var.function_name
-  #handler                        = var.handler
+  handler                        = var.handler
   image_uri                      = var.image_uri
-  #kms_key_arn                    = var.kms_key_arn
-  #layers                         = var.layers
+  kms_key_arn                    = var.kms_key_arn
+  layers                         = var.layers
   memory_size                    = var.memory_size
   package_type                   = var.package_type
- # publish                        = var.publish
-  #reserved_concurrent_executions = var.reserved_concurrent_executions
+  # publish                        = var.publish
+  # reserved_concurrent_executions = var.reserved_concurrent_executions
   role                           = aws_iam_role.lambda.arn
   tags                           = var.tags
   timeout                        = var.timeout
@@ -62,7 +65,6 @@ dynamic "environment" {
 }
 
 
-
 resource "aws_security_group" "this" {
   name_prefix = "var.function_name-lambda"
   vpc_id      = var.vpc_id
@@ -79,10 +81,7 @@ resource "aws_security_group" "this" {
     create_before_destroy = true
   }
 }
-
-
-
-  #IAM 
+# == IAM == #
 
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
@@ -112,7 +111,7 @@ data "aws_iam_policy_document" "execution_role" {
       "ssm:GetParameter",
       "ssm:GetParemetersByPath"
     ]
-     resources = flatten([local.secrets_arns,
+     resources = flatten([local.secrets,
      ])
   }
 }
@@ -135,9 +134,8 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
 }
 
 resource "aws_cloudwatch_event_rule" "scheduled" { 
-  name = "${var.function_name}-scheduled"
-
-  schedule_expression = "rate(${var.interval})"
+ name = "${var.function_name}-scheduled"
+ schedule_expression = "rate(${var.interval})"
 }
 resource "aws_cloudwatch_event_target" "scheduled" {
   target_id = "${var.function_name}-scheduled"
