@@ -1,24 +1,15 @@
-# README #
+# Terraform AWS Lambda Function
+
 
 Terraform AWS Lambda Function  module  to build a Lambda Function with Docker Container Image.
 
 This module creates a Lambda Fucntion which will trigger by Cloud Watch Events.
 
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-Usage
-
+## Usage
+```hcl
 module "lambda" {
-  source = "./terraform-aws-lambda"
+  source = "bitbucket.org/liveviewtech/terraform-aws-fargate-component.git?ref=v"
 
   image_uri     = "${module.base.ecr_repository.repository_url}:${var.image_tag}"
   package_type  = "Image"
@@ -42,10 +33,34 @@ module "lambda" {
 }
 
 
-Created Resources:
+
+## Created Resources
+Lambda Function (if not provided)
+with security group
+with IAM role, policy to attach Secrets
+Creates Cloud Watch Event Trigger to trigger the lambda Function
+CloudWatch Log Group
+CloudWatch Metric Alarms (one for stepping up and one for stepping down)
+- Lambda Function (if not provided)
+  - with security group,IAM role, policy to attach Secrets
+- CloudWatch Log Group
+
 
 Requirement:
 
 Inputs:
-Outputs:
+
+## Outputs
+
+| Name                           | Type                                                                                                                | Description                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| lambda_function_arn               | [object](https://www.terraform.io/docs/providers/aws/r/ecs_service.html#attributes-reference)                       | The ARN of the Lambda Function                                      |
+| lambda_function_name                  | [object](https://www.terraform.io/docs/providers/aws/r/ecs_cluster.html#attributes-reference)                       | The name of the Lambda Function |
+| lambda_role_arn               | [object](https://www.terraform.io/docs/providers/aws/r/security_group.html#attributes-reference)                    | The ARN of the IAM role created for the Lambda Function            |
+| lambda_role_name               | [object](https://www.terraform.io/docs/providers/aws/r/ecs_task_definition.html#attributes-reference)               | The name of the IAM role created for the Lambda Function                |
+| autoscaling_step_up_policy     | [object](https://www.terraform.io/docs/providers/aws/r/autoscaling_policy.html#attributes-reference)                | Autoscaling policy to step up                                    |
+| autoscaling_step_down_policy   | [object](https://www.terraform.io/docs/providers/aws/r/autoscaling_policy.html#attributes-reference)                | Autoscaling policy to step down                                  |
+| task_role                      | [object](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role#attributes-reference) | IAM role created for the tasks.                                  |
+| task_execution_role            | [object](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role#attributes-reference) | IAM role created for the execution of tasks.                     |
+
 

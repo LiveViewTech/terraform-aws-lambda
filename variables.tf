@@ -98,6 +98,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "image_tag" {
+  type    = string
+  default = "latest"
+}
+
+
 variable "interval" {
   type    = string
   default = "10 minutes"

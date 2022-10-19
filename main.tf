@@ -8,20 +8,16 @@ terraform {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-
 locals {
   secrets =[for k,v in var.environment_variables: v if length(regexall("^SSM", k)) > 0 ]
-  function_name = local.secrets_arns 
-  ssm_parameters = distinct(flatten((local.secrets_arns)))
+  ssm_parameters = distinct(flatten((local.secrets)))
   has_secrets            = length(local.ssm_parameters) > 0
   ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
   secrets_arns = [
     for param in local.ssm_parameters :
-    # concat(local.ssm_parameter_arn_base,param)
     "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
   ]
   
-
   cloudwatch_log_group_name = "/lambda/${var.function_name}"
 }
 
@@ -111,7 +107,7 @@ data "aws_iam_policy_document" "execution_role" {
       "ssm:GetParameter",
       "ssm:GetParemetersByPath"
     ]
-     resources = flatten([local.secrets,
+     resources = flatten([local.secrets_arns,
      ])
   }
 }
