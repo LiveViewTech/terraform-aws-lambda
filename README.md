@@ -35,12 +35,12 @@ module "lambda" {
 
 
 ## Created Resources
-Lambda Function (if not provided)
-with security group
-with IAM role, policy to attach Secrets
-Creates Cloud Watch Event Trigger to trigger the lambda Function
-CloudWatch Log Group
-CloudWatch Metric Alarms (one for stepping up and one for stepping down)
+- Lambda Function (if not provided)
+   with security group
+- IAM role, policy to attach Secrets
+- Creates Cloud Watch Event Trigger to trigger the lambda Function
+- CloudWatch Log Group
+- CloudWatch Metric Alarms (one for stepping up and one for stepping down)
 - Lambda Function (if not provided)
   - with security group,IAM role, policy to attach Secrets
 - CloudWatch Log Group
