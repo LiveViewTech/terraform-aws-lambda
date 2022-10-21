@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
-    aws = ">= 3.0.0"
+    aws = "~>3"
   }
 }
 
@@ -21,23 +21,27 @@ locals {
   cloudwatch_log_group_name = "/lambda/${var.name}"
 }
 
+# == LAMBDA == #
 
-# == Lambda Function == #
+locals {
+  ssm_layer_arn = "arn:aws:lambda:${data.aws_region.current.name}:345057560386:layer:AWS-Parameters-and-Secrets-Lambda-Extension:2"
+}
+
 resource "aws_lambda_function" "lambda" {
+  description      = var.description
+  filename         = var.filename
+  source_code_hash = var.source_code_hash
+  function_name    = var.name
+  handler          = var.handler
+  image_uri        = var.image_uri
+  memory_size      = var.memory_size
+  package_type     = var.package_type
+  role             = aws_iam_role.lambda.arn
+  tags             = var.tags
+  timeout          = var.timeout
+  runtime          = var.runtime
 
-  description   = var.description
-  filename      = var.filename
-  function_name = var.name
-  handler       = var.handler
-  image_uri     = var.image_uri
-  layers        = var.layers
-  memory_size   = var.memory_size
-  package_type  = var.package_type
-  role          = aws_iam_role.lambda.arn
-  tags          = var.tags
-  timeout       = var.timeout
-
-
+  layers = concat([local.ssm_layer_arn], var.layers)
 
   dynamic "vpc_config" {
     for_each = var.private_subnet_ids == null ? [] : [var.private_subnet_ids]
@@ -47,16 +51,13 @@ resource "aws_lambda_function" "lambda" {
     }
   }
 
-
   dynamic "environment" {
     for_each = var.environment_variables != null ? [1] : []
     content {
       variables = var.environment_variables
     }
   }
-
 }
-
 
 resource "aws_security_group" "this" {
   name_prefix = "lvt-"
@@ -74,8 +75,8 @@ resource "aws_security_group" "this" {
     create_before_destroy = true
   }
 }
-# == IAM == #
 
+# == IAM == #
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]

@@ -14,11 +14,10 @@ variable "handler" {
   default     = null
 }
 
-
 variable "package_type" {
   type        = string
   description = "The Lambda deployment package type. Valid values are Zip and Image."
-  default     = "zip"
+  default     = "Zip"
 }
 
 variable "description" {
@@ -39,7 +38,10 @@ variable "layers" {
   default     = []
 }
 
-
+variable "runtime" {
+  type    = string
+  default = null
+}
 
 variable "timeout" {
   description = "The amount of time your Lambda Function has to run in seconds."
@@ -65,6 +67,7 @@ variable "role_permissions_boundary_arn" {
 variable "image_uri" {
   type        = string
   description = "The ECR image URI containing the function's deployment package."
+  default     = null
 }
 variable "private_subnet_ids" {
   type        = list(string)
@@ -109,3 +112,7 @@ variable "secrets" {
   default     = {}
 }
 
+variable "source_code_hash" {
+  type    = string
+  default = null
+}
