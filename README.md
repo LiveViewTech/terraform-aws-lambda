@@ -9,7 +9,7 @@ This module creates a Lambda Fucntion which will trigger by Cloud Watch Events.
 ## Usage
 ```hcl
 module "lambda" {
-  source = "bitbucket.org/liveviewtech/terraform-aws-fargate-component.git?ref=v"
+  source = "bitbucket.org/liveviewtech/terraform-aws-fargate-component.git?ref=v1"
 
   image_uri     = "${module.base.ecr_repository.repository_url}:${var.image_tag}"
   package_type  = "Image"
