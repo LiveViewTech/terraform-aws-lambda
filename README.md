@@ -13,7 +13,7 @@ module "lambda" {
 
   image_uri     = "${module.base.ecr_repository.repository_url}:${var.image_tag}"
   package_type  = "Image"
-  function_name = local.project.id
+  name = local.project.id
   tags = {
        env       = "dev"
     }
@@ -33,7 +33,11 @@ module "lambda" {
 }
 ```
 
-
+#### Lambda Function
+- **`name`** - (Required) Lambda Function Name
+- **`iamgeuri`**(Required) the ecr_image_url with the tag like: `<acct_num>.dkr.ecr.us-west-2.amazonaws.com/myapp:dev` or the image URL from dockerHub or some other docker registry
+- **`environment_variables`** - (Required) a map of environment variables to pass to the docker container
+- **`secrets`** - (Required) a map of secrets from the parameter store to be assigned to env variables
 ## Created Resources
 - Lambda Function (if not provided)
    with security group
@@ -49,6 +53,25 @@ module "lambda" {
 Requirement:
 
 Inputs:
+
+| Name                          | Type                                  | Description                                                                                                                                                                                              | Default |
+| ----------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| name                   | string                   | Application name to name your Lambda Function                                                                                                                                   | null    |
+| image_uri                          | string               |ECR Image URI containing the function's deployment package                 |                                                                                                                                           |         |
+| filename              | string                                | File that contains your compiled or zipped                                                                                                               | <name>  |
+| handler            | string                                  | The function entrypoint in your code.                                                                                                                                                    | true    |
+| layers          | list(string)       | List of Lambda Layer Version ARNs (maximum of 5) to attach to the Lambda Function.
+| memory_size    | number | Amount of memory in MB the Lambda Function can use at runtime.                                                | []      |
+| package_type                 | string                          | The Lambda deployment package type. Valid values are Zip and Image.                                                                                                                                       | []      |
+| role                      | number                                | CPU for the task definition                                                                                                                                                                                                                                                                             | 512     |
+| timeout               | list(string)                          | List of extra security group IDs to attach to the fargate task                                                                                                                                           | []      |
+| vpc_id                        | string                                | VPC ID to deploy the ECS fargate service and ALB                                                                                                                                                         |         |
+| private_subnet_ids            | list(string)                          | List of subnet IDs for the fargate service                                                                                                                                                               |         |
+| role_permissions_boundary_arn | string                                | ARN of the IAM Role permissions boundary to place on each IAM role created                                                                                                                                                                       |         |
+| log_retention_in_days         | number                                | CloudWatch log group retention in days                                                                                                                                                                   | 120     |
+| tags                          | map(string)                           | A map of AWS Tags to attach to each resource created                                                                                                                                                     | {}      |
+                              | false   |
+
 
 ## Outputs
 

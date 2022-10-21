@@ -1,15 +1,5 @@
-variable "architectures" {
-  type        = list(string)
-  description = <<EOF
-    Instruction set architecture for your Lambda function. Valid values are ["x86_64"] and ["arm64"].
-    Default is ["x86_64"]. Removing this attribute, function's architecture stay the same.
-  EOF
-  default     = null
-}
-
-variable "function_name" {
-  type        = string
-  description = "Application name to name your Fargate Component and other resources. Must be <= 24 characters."
+variable "name" {
+  type = string
 }
 
 variable "filename" {
@@ -28,7 +18,7 @@ variable "handler" {
 variable "package_type" {
   type        = string
   description = "The Lambda deployment package type. Valid values are Zip and Image."
-  default     = "Zip"
+  default     = "zip"
 }
 
 variable "description" {
@@ -50,12 +40,6 @@ variable "layers" {
 }
 
 
-variable "kms_key_arn" {
-  type        = string
-  description = " Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables."
-  default     = ""
-}
-
 
 variable "timeout" {
   description = "The amount of time your Lambda Function has to run in seconds."
@@ -70,7 +54,7 @@ variable "security_groups" {
 variable "vpc_id" {
   type        = string
   description = "VPC ID to deploy ECS fargate service."
-  default    = ""
+  default     = ""
 }
 
 variable "role_permissions_boundary_arn" {
@@ -113,6 +97,14 @@ variable "interval" {
 
 variable "environment_variables" {
   description = "A map that defines environment variables for the Lambda Function."
+  type        = map(string)
+  default     = {}
+}
+
+
+
+variable "secrets" {
+  description = "A map that defines secrets for the Lambda Function."
   type        = map(string)
   default     = {}
 }
