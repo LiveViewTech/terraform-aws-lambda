@@ -61,16 +61,16 @@ Inputs:
 | filename              | string                                | File that contains your compiled or zipped                                                                                                               | <name>  |
 | handler            | string                                  | The function entrypoint in your code.                                                                                                                                                    | true    |
 | layers          | list(string)       | List of Lambda Layer Version ARNs (maximum of 5) to attach to the Lambda Function.
-| memory_size    | number | Amount of memory in MB the Lambda Function can use at runtime.                                                | []      |
+| memory_size    | number | Amount of memory in MB the Lambda Function can use at runtime.      | 512     |                                            | []      |
 | package_type                 | string                          | The Lambda deployment package type. Valid values are Zip and Image.                                                                                                                                       | []      |
-| role                      | number                                | CPU for the task definition                                                                                                                                                                                                                                                                             | 512     |
+| role                      | string                                |Role created for the Lambda Function                                                                                                                                                                                                                                                                            
 | timeout               | list(string)                          | List of extra security group IDs to attach to the fargate task                                                                                                                                           | []      |
 | vpc_id                        | string                                | VPC ID to deploy the ECS fargate service and ALB                                                                                                                                                         |         |
 | private_subnet_ids            | list(string)                          | List of subnet IDs for the fargate service                                                                                                                                                               |         |
 | role_permissions_boundary_arn | string                                | ARN of the IAM Role permissions boundary to place on each IAM role created                                                                                                                                                                       |         |
 | log_retention_in_days         | number                                | CloudWatch log group retention in days                                                                                                                                                                   | 120     |
 | tags                          | map(string)                           | A map of AWS Tags to attach to each resource created                                                                                                                                                     | {}      |
-                              | false   |
+ 
 
 
 ## Outputs
