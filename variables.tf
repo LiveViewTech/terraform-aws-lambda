@@ -34,7 +34,7 @@ variable "memory_size" {
 
 variable "layers" {
   type        = list(string)
-  description = "List of Lambda Layer Version ARNs (maximum of 5) to attach to the Lambda Function."
+  description = "List of Lambda Layer Version ARNs (maximum of 3) to attach to the Lambda Function."
   default     = []
 }
 
@@ -90,7 +90,6 @@ variable "image_tag" {
   default = "latest"
 }
 
-
 variable "interval" {
   type    = string
   default = "10 minutes"
@@ -103,8 +102,6 @@ variable "environment_variables" {
   type        = map(string)
   default     = {}
 }
-
-
 
 variable "secrets" {
   description = "A map that defines secrets for the Lambda Function."

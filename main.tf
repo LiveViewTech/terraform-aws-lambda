@@ -9,14 +9,17 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  secrets                = [for k, v in var.environment_variables : v if length(regexall("^SSM", k)) > 0]
+  # secrets                = [for k, v in var.environment_variables : v if length(regexall("^SSM", k)) > 0]
+  secrets = [for k, v in var.secrets : v]
   ssm_parameters         = distinct(flatten((local.secrets)))
-  has_secrets            = length(local.ssm_parameters) > 0
+  has_secrets            = length(var.secrets) > 0
   ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
   secrets_arns = [
     for param in local.ssm_parameters :
     "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
   ]
+  test_env = merge(var.environment_variables,
+  { AWS_LAMBDA_EXEC_WRAPPER = "/opt/secret-wrapper", PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL = "DEBUG" })
 
   cloudwatch_log_group_name = "/lambda/${var.name}"
 }
@@ -24,7 +27,34 @@ locals {
 # == LAMBDA == #
 
 locals {
-  ssm_layer_arn = "arn:aws:lambda:${data.aws_region.current.name}:345057560386:layer:AWS-Parameters-and-Secrets-Lambda-Extension:2"
+  ssm_layer_arn = "arn:aws:lambda:us-west-2:345057560386:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:2"
+}
+
+resource "random_uuid" "this" {}
+
+resource "local_file" "temp_wrapper" {
+  filename = "${path.module}/retrieve-secret-layer/bin/secret-wrapper"
+  content = (templatefile("${path.module}/retrieve-secret-layer/secret-wrapper.tftpl", {
+    secrets = var.secrets
+  }))
+}
+
+data "archive_file" "this" {
+  type        = "zip"
+  output_path = "${path.module}/retrieve-secret-layer/target/secret-wrapper-${random_uuid.this.result}.zip"
+  source_dir  = "${path.module}/retrieve-secret-layer/bin"
+  depends_on = [local_file.temp_wrapper]
+}
+
+resource "aws_lambda_layer_version" "this" {
+  filename   = data.archive_file.this.output_path
+  layer_name = "${var.name}-retrieve-ssm-secrets"
+
+  description      = "Fetches Secrets from SSM and provides them as environment variables - Managed by Terraform"
+  source_code_hash = filebase64sha256("${path.module}/retrieve-secret-layer/target/secret-wrapper-${random_uuid.this.result}.zip")
+
+  compatible_architectures = ["arm64"]
+  compatible_runtimes      = [var.runtime]
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -40,8 +70,9 @@ resource "aws_lambda_function" "lambda" {
   tags             = var.tags
   timeout          = var.timeout
   runtime          = var.runtime
+  architectures    = ["arm64"]
 
-  layers = concat([local.ssm_layer_arn], var.layers)
+  layers = concat([local.ssm_layer_arn, aws_lambda_layer_version.this.arn], var.layers)
 
   dynamic "vpc_config" {
     for_each = var.private_subnet_ids == null ? [] : [var.private_subnet_ids]
@@ -54,7 +85,8 @@ resource "aws_lambda_function" "lambda" {
   dynamic "environment" {
     for_each = var.environment_variables != null ? [1] : []
     content {
-      variables = var.environment_variables
+      variables = local.test_env
+      # variables = var.environment_variables
     }
   }
 }
@@ -103,10 +135,10 @@ data "aws_iam_policy_document" "execution_role" {
     actions = [
       "ssm:GetParameters",
       "ssm:GetParameter",
-      "ssm:GetParemetersByPath"
+      "ssm:GetParametersByPath",
+      "kms:Decrypt"
     ]
-    resources = flatten([local.secrets_arns,
-    ])
+    resources = local.secrets_arns
   }
 }
 

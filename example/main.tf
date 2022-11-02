@@ -9,16 +9,18 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2"
+  region  = "us-west-2"
+  profile = "lvt-service-comms-dev"
 }
 
 module "acs" {
   source   = "bitbucket.org/liveviewtech/terraform-aws-acs-info.git?ref=v2.0.1"
   vpc_type = "non-edge"
+  profile  = "lvt-service-comms-dev"
 }
 
 locals {
-  project_id = "example-lambda"
+  project_id = "example-lambda-ssm"
 }
 
 resource "aws_ssm_parameter" "super_secret" {
@@ -55,21 +57,12 @@ module "lambda" {
     SUPER_SECRET = aws_ssm_parameter.super_secret.name
   }
 
+
   role_permissions_boundary_arn = module.acs.role_permissions_boundary.arn
 }
 
 
-
-
-
-
-
-
-
-
-
-
-# resource "aws_cloudwatch_event_rule" "scheduled" { 
+# resource "aws_cloudwatch_event_rule" "scheduled" {
 #   name = "${local.project_id}-scheduled"
 
 #   schedule_expression = "rate(${var.interval})"
