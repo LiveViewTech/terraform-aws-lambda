@@ -10,7 +10,7 @@ data "aws_region" "current" {}
 
 locals {
   # secrets                = [for k, v in var.environment_variables : v if length(regexall("^SSM", k)) > 0]
-  secrets = [for k, v in var.secrets : v]
+  secrets                = [for k, v in var.secrets : v]
   ssm_parameters         = distinct(flatten((local.secrets)))
   has_secrets            = length(var.secrets) > 0
   ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
@@ -19,31 +19,26 @@ locals {
     "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
   ]
   test_env = merge(var.environment_variables,
-  { AWS_LAMBDA_EXEC_WRAPPER = "/opt/secret-wrapper", PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL = "DEBUG" })
+  { AWS_LAMBDA_EXEC_WRAPPER = "/opt/secret-wrapper" })
 
   cloudwatch_log_group_name = "/lambda/${var.name}"
 }
 
 # == LAMBDA == #
 
-locals {
-  ssm_layer_arn = "arn:aws:lambda:us-west-2:345057560386:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:2"
-}
-
-resource "random_uuid" "this" {}
-
 resource "local_file" "temp_wrapper" {
   filename = "${path.module}/retrieve-secret-layer/bin/secret-wrapper"
   content = (templatefile("${path.module}/retrieve-secret-layer/secret-wrapper.tftpl", {
-    secrets = var.secrets
+    secrets  = var.secrets,
+    role_arn = aws_iam_role.lambda.arn
   }))
 }
 
 data "archive_file" "this" {
   type        = "zip"
-  output_path = "${path.module}/retrieve-secret-layer/target/secret-wrapper-${random_uuid.this.result}.zip"
+  output_path = "${path.module}/retrieve-secret-layer/target/secret-wrapper.zip"
   source_dir  = "${path.module}/retrieve-secret-layer/bin"
-  depends_on = [local_file.temp_wrapper]
+  depends_on  = [local_file.temp_wrapper]
 }
 
 resource "aws_lambda_layer_version" "this" {
@@ -51,10 +46,9 @@ resource "aws_lambda_layer_version" "this" {
   layer_name = "${var.name}-retrieve-ssm-secrets"
 
   description      = "Fetches Secrets from SSM and provides them as environment variables - Managed by Terraform"
-  source_code_hash = filebase64sha256("${path.module}/retrieve-secret-layer/target/secret-wrapper-${random_uuid.this.result}.zip")
+  source_code_hash = filebase64sha256("${path.module}/retrieve-secret-layer/target/secret-wrapper.zip")
 
   compatible_architectures = ["arm64"]
-  compatible_runtimes      = [var.runtime]
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -72,7 +66,7 @@ resource "aws_lambda_function" "lambda" {
   runtime          = var.runtime
   architectures    = ["arm64"]
 
-  layers = concat([local.ssm_layer_arn, aws_lambda_layer_version.this.arn], var.layers)
+  layers = concat([aws_lambda_layer_version.this.arn], var.layers)
 
   dynamic "vpc_config" {
     for_each = var.private_subnet_ids == null ? [] : [var.private_subnet_ids]
@@ -136,6 +130,7 @@ data "aws_iam_policy_document" "execution_role" {
       "ssm:GetParameters",
       "ssm:GetParameter",
       "ssm:GetParametersByPath",
+      "ssm:GetSecretValue",
       "kms:Decrypt"
     ]
     resources = local.secrets_arns
