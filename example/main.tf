@@ -57,28 +57,27 @@ module "lambda" {
     SUPER_SECRET = aws_ssm_parameter.super_secret.name
   }
 
-
   role_permissions_boundary_arn = module.acs.role_permissions_boundary.arn
 }
 
 
-# resource "aws_cloudwatch_event_rule" "scheduled" {
-#   name = "${local.project_id}-scheduled"
+resource "aws_cloudwatch_event_rule" "scheduled" {
+  name = "${local.project_id}-scheduled"
 
-#   schedule_expression = "rate(${var.interval})"
-# }
+  schedule_expression = "rate(10 minutes)"
+}
 
-# resource "aws_cloudwatch_event_target" "scheduled" {
-#   target_id = "${local.project_id}-scheduled"
+resource "aws_cloudwatch_event_target" "scheduled" {
+  target_id = "${local.project_id}-scheduled"
 
-#   rule = aws_cloudwatch_event_rule.scheduled.name
-#   arn  = aws_lambda_function.main.arn
-# }
+  rule = aws_cloudwatch_event_rule.scheduled.name
+  arn  = module.lambda.function_arn
+}
 
-# resource "aws_lambda_permission" "cloudwatch_invoke" {
-#   statement_id  = "AllowExecutionFromCloudWatch"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.main.function_name
-#   principal     = "events.amazonaws.com"
-#   source_arn    = aws_cloudwatch_event_rule.scheduled.arn
-# }
+resource "aws_lambda_permission" "cloudwatch_invoke" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.scheduled.arn
+}

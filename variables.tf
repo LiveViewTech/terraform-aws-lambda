@@ -21,20 +21,20 @@ variable "package_type" {
 }
 
 variable "description" {
-  description = "Description of your Lambda Function (or Layer)"
   type        = string
+  description = "Description of your Lambda Function (or Layer)"
   default     = ""
 }
 
 variable "memory_size" {
-  description = "Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments."
   type        = number
+  description = "Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments."
   default     = 128
 }
 
 variable "layers" {
   type        = list(string)
-  description = "List of Lambda Layer Version ARNs (maximum of 3) to attach to the Lambda Function."
+  description = "List of Lambda Layer Version ARNs (maximum of 4) to attach to the Lambda Function."
   default     = []
 }
 
@@ -44,15 +44,17 @@ variable "runtime" {
 }
 
 variable "timeout" {
-  description = "The amount of time your Lambda Function has to run in seconds."
   type        = number
+  description = "The amount of time your Lambda Function has to run in seconds."
   default     = 30
 }
+
 variable "security_groups" {
   type        = list(string)
   description = "List of extra security group IDs to attach to the fargate task."
   default     = []
 }
+
 variable "vpc_id" {
   type        = string
   description = "VPC ID to deploy ECS fargate service."
@@ -69,6 +71,7 @@ variable "image_uri" {
   description = "The ECR image URI containing the function's deployment package."
   default     = null
 }
+
 variable "private_subnet_ids" {
   type        = list(string)
   description = "List of subnet IDs for the fargate service."
@@ -79,6 +82,7 @@ variable "log_retention_in_days" {
   description = "CloudWatch log group retention in days. Defaults to 120."
   default     = 120
 }
+
 variable "tags" {
   type        = map(string)
   description = "A map of AWS Tags to attach to each resource created"
@@ -92,20 +96,19 @@ variable "image_tag" {
 
 variable "interval" {
   type    = string
-  default = "10 minutes"
-
   description = "the time between invocations"
+  default = "10 minutes"
 }
 
 variable "environment_variables" {
-  description = "A map that defines environment variables for the Lambda Function."
   type        = map(string)
+  description = "A map that defines environment variables for the Lambda Function."
   default     = {}
 }
 
 variable "secrets" {
-  description = "A map that defines secrets for the Lambda Function."
   type        = map(string)
+  description = "A map that defines secrets for the Lambda Function."
   default     = {}
 }
 

@@ -9,22 +9,16 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  # secrets                = [for k, v in var.environment_variables : v if length(regexall("^SSM", k)) > 0]
-  secrets                = [for k, v in var.secrets : v]
-  ssm_parameters         = distinct(flatten((local.secrets)))
+  secret_values          = [for k, v in var.secrets : v]
   has_secrets            = length(var.secrets) > 0
   ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
   secrets_arns = [
-    for param in local.ssm_parameters :
+    for param in distinct(flatten((local.secret_values))) :
     "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
   ]
-  test_env = merge(var.environment_variables,
-  { AWS_LAMBDA_EXEC_WRAPPER = "/opt/secret-wrapper" })
-
-  cloudwatch_log_group_name = "/lambda/${var.name}"
 }
 
-# == LAMBDA == #
+# === SECRETS LAYER === #
 
 resource "local_file" "temp_wrapper" {
   filename = "${path.module}/retrieve-secret-layer/bin/secret-wrapper"
@@ -45,11 +39,12 @@ resource "aws_lambda_layer_version" "this" {
   filename   = data.archive_file.this.output_path
   layer_name = "${var.name}-retrieve-ssm-secrets"
 
-  description      = "Fetches Secrets from SSM and provides them as environment variables - Managed by Terraform"
-  source_code_hash = filebase64sha256("${path.module}/retrieve-secret-layer/target/secret-wrapper.zip")
-
+  description              = "Fetches Secrets from SSM and provides them as environment variables - Managed by Terraform"
+  source_code_hash         = data.archive_file.this.output_base64sha256
   compatible_architectures = ["arm64"]
 }
+
+# === LAMBDA === #
 
 resource "aws_lambda_function" "lambda" {
   description      = var.description
@@ -57,7 +52,7 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = var.source_code_hash
   function_name    = var.name
   handler          = var.handler
-  image_uri        = var.image_uri
+  image_uri        = var.filename == null ? var.image_uri : null
   memory_size      = var.memory_size
   package_type     = var.package_type
   role             = aws_iam_role.lambda.arn
@@ -79,8 +74,8 @@ resource "aws_lambda_function" "lambda" {
   dynamic "environment" {
     for_each = var.environment_variables != null ? [1] : []
     content {
-      variables = local.test_env
-      # variables = var.environment_variables
+      variables = merge(var.environment_variables,
+      { AWS_LAMBDA_EXEC_WRAPPER = "/opt/secret-wrapper" })
     }
   }
 }
@@ -96,13 +91,19 @@ resource "aws_security_group" "this" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   lifecycle {
     create_before_destroy = true
   }
 }
 
-# == IAM == #
+resource "aws_cloudwatch_log_group" "this" {
+  name              = "/lambda/${var.name}"
+  retention_in_days = var.log_retention_in_days
+  tags              = var.tags
+}
+
+# === IAM ROLE === #
+
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -153,29 +154,4 @@ resource "aws_iam_role_policy_attachment" "execution_role" {
 resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
-resource "aws_cloudwatch_event_rule" "scheduled" {
-  name                = "${var.name}-scheduled"
-  schedule_expression = "rate(${var.interval})"
-}
-
-resource "aws_cloudwatch_event_target" "scheduled" {
-  target_id = "${var.name}-scheduled"
-  rule      = aws_cloudwatch_event_rule.scheduled.name
-  arn       = aws_lambda_function.lambda.arn
-}
-
-resource "aws_lambda_permission" "cloudwatch_invoke" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.scheduled.arn
-}
-
-resource "aws_cloudwatch_log_group" "this" {
-  name              = local.cloudwatch_log_group_name
-  retention_in_days = var.log_retention_in_days
-  tags              = var.tags
 }
