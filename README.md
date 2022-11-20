@@ -38,36 +38,28 @@ module "lambda" {
   - Includes policy to fetch SSM parameters if secrets are included
 - CloudWatch Log Group
 
-
-
 ## Inputs:
-| Name                                                                                                                            | Description                                                                                                                                     | Type           | Default        | Required |
-| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | :------: |
-| <a name="input_name"></a> [name](#input\_name)                                                                                  | Name for your lambda function                                                                                                                                             | `string`       | null           |   yes    |
-| <a name="input_description"></a> [description](#input\_description)                                                             | Description of your Lambda Function (or Layer)                                                                                                  | `string`       | `""`           |    no    |
-| <a name="input_environment_variables"></a> [environment\_variables](#input\_environment\_variables)                             | A map that defines environment variables for the Lambda Function.                                                                               | `map(string)`  | `{}`           |    no    |
-| <a name="input_filename"></a> [filename](#input\_filename)                                                                      | The path to the function's deployment package within the local filesystem. If defined, the image\_uri cannot be used. | `string`       | `null`         |    no    |
-| <a name="input_handler"></a> [handler](#input\_handler)                                                                         | The function entrypoint in your code.                                                                                                           | `string`       | `null`         |    no    |
-| <a name="input_image_tag"></a> [image\_tag](#input\_image\_tag)                                                                 | n/a                                                                                                                                             | `string`       | `"latest"`     |    no    |
-| <a name="input_image_uri"></a> [image\_uri](#input\_image\_uri)                                                                 | The ECR image URI containing the function's deployment package.                                                                                 | `string`       | `null`         |    no    |
-| <a name="input_interval"></a> [interval](#input\_interval)                                                                      | the time between invocations                                                                                                                    | `string`       | `"10 minutes"` |    no    |
-| <a name="input_layers"></a> [layers](#input\_layers)                                                                            | List of Lambda Layer Version ARNs (maximum of 4) to attach to the Lambda Function.                                                              | `list(string)` | `[]`           |    no    |
-| <a name="input_log_retention_in_days"></a> [log\_retention\_in\_days](#input\_log\_retention\_in\_days)                         | CloudWatch log group retention in days. Defaults to 120.                                                                                        | `number`       | `120`          |    no    |
-| <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size)                                                           | Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments.           | `number`       | `128`          |    no    |
-| <a name="input_package_type"></a> [package\_type](#input\_package\_type)                                                        | The Lambda deployment package type. Valid values are Zip and Image.                                                                             | `string`       | `"Zip"`        |    no    |
-| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids)                                    | List of subnet IDs for the fargate service.                                                                                                     | `list(string)` | n/a            |   yes    |
-| <a name="input_role_permissions_boundary_arn"></a> [role\_permissions\_boundary\_arn](#input\_role\_permissions\_boundary\_arn) | ARN of the IAM Role permissions boundary to place on each IAM role created.                                                                     | `string`       | n/a            |   yes    |
-| <a name="input_runtime"></a> [runtime](#input\_runtime)                                                                         | n/a                                                                                                                                             | `string`       | `null`         |    no    |
-| <a name="input_secrets"></a> [secrets](#input\_secrets)                                                                         | A map that defines secrets for the Lambda Function.                                                                                             | `map(string)`  | `{}`           |    no    |
-| <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups)                                               | List of extra security group IDs to attach to the fargate task.                                                                                 | `list(string)` | `[]`           |    no    |
-| <a name="input_source_code_hash"></a> [source\_code\_hash](#input\_source\_code\_hash)                                          | n/a                                                                                                                                             | `string`       | `null`         |    no    |
-| <a name="input_tags"></a> [tags](#input\_tags)                                                                                  | A map of AWS Tags to attach to each resource created                                                                                            | `map(string)`  | `{}`           |    no    |
-| <a name="input_timeout"></a> [timeout](#input\_timeout)                                                                         | The amount of time your Lambda Function has to run in seconds.                                                                                  | `number`       | `30`           |    no    |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id)                                                                          | VPC ID to deploy ECS fargate service.                                                                                                           | `string`       | `""`           |    no    |
-
-
-
-
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_description"></a> [description](#input\_description) | Description of your Lambda Function (or Layer) | `string` | `""` | no |
+| <a name="input_environment_variables"></a> [environment\_variables](#input\_environment\_variables) | A map that defines environment variables for the Lambda Function. | `map(string)` | `{}` | no |
+| <a name="input_filename"></a> [filename](#input\_filename) | The path to the function's deployment package within the local filesystem. If defined, The s3\_-prefixed options and image\_uri cannot be used. | `string` | `""` | no |
+| <a name="input_handler"></a> [handler](#input\_handler) | The function entrypoint in your code. | `string` | `""` | no |
+| <a name="input_image_uri"></a> [image\_uri](#input\_image\_uri) | The ECR image URI containing the function's deployment package. | `string` | `""` | no |
+| <a name="input_layers"></a> [layers](#input\_layers) | List of Lambda Layer Version ARNs (maximum of 4) to attach to the Lambda Function. | `list(string)` | `[]` | no |
+| <a name="input_log_retention_in_days"></a> [log\_retention\_in\_days](#input\_log\_retention\_in\_days) | CloudWatch log group retention in days. Defaults to 120. | `number` | `120` | no |
+| <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments. | `number` | `128` | no |
+| <a name="input_name"></a> [name](#input\_name) | Name for your lambda function | `string` | `""` | no |
+| <a name="input_package_type"></a> [package\_type](#input\_package\_type) | The Lambda deployment package type. Valid values are Zip and Image. | `string` | `"Zip"` | no |
+| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids) | List of subnet IDs for the fargate service. | `list(string)` | `[]` | no |
+| <a name="input_role_permissions_boundary_arn"></a> [role\_permissions\_boundary\_arn](#input\_role\_permissions\_boundary\_arn) | ARN of the IAM Role permissions boundary to place on each IAM role created. | `string` | `""` | no |
+| <a name="input_runtime"></a> [runtime](#input\_runtime) | The runtime environment for your function. (e.g. python3.9) | `string` | `""` | no |
+| <a name="input_secrets"></a> [secrets](#input\_secrets) | A map that defines secrets for the Lambda Function. | `map(string)` | `{}` | no |
+| <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | List of extra security group IDs to attach to the function | `list(string)` | `[]` | no |
+| <a name="input_source_code_hash"></a> [source\_code\_hash](#input\_source\_code\_hash) | The path to your deployment package. Used to detect changes requiring re-provisioning | `string` | `null` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of AWS Tags to attach to each resource created | `map(string)` | `{}` | no |
+| <a name="input_timeout"></a> [timeout](#input\_timeout) | The amount of time your Lambda Function has to run in seconds. | `number` | `30` | no |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID | `string` | `""` | no |
 ## Outputs
 | Name | Description |
 |------|-------------|

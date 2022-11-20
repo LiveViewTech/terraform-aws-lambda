@@ -1,17 +1,19 @@
 variable "name" {
   type = string
+  description = "Name for your lambda function"
+  default = ""
 }
 
 variable "filename" {
   type        = string
   description = "The path to the function's deployment package within the local filesystem. If defined, The s3_-prefixed options and image_uri cannot be used."
-  default     = null
+  default     = ""
 }
 
 variable "handler" {
   type        = string
   description = "The function entrypoint in your code."
-  default     = null
+  default     = ""
 }
 
 variable "package_type" {
@@ -40,7 +42,8 @@ variable "layers" {
 
 variable "runtime" {
   type    = string
-  default = null
+  description = "The runtime environment for your function. (e.g. python3.9)"
+  default = ""
 }
 
 variable "timeout" {
@@ -51,30 +54,32 @@ variable "timeout" {
 
 variable "security_groups" {
   type        = list(string)
-  description = "List of extra security group IDs to attach to the fargate task."
+  description = "List of extra security group IDs to attach to the function"
   default     = []
 }
 
 variable "vpc_id" {
   type        = string
-  description = "VPC ID to deploy ECS fargate service."
+  description = "VPC ID"
   default     = ""
 }
 
 variable "role_permissions_boundary_arn" {
   type        = string
   description = "ARN of the IAM Role permissions boundary to place on each IAM role created."
+  default = ""
 }
 
 variable "image_uri" {
   type        = string
   description = "The ECR image URI containing the function's deployment package."
-  default     = null
+  default     = ""
 }
 
 variable "private_subnet_ids" {
   type        = list(string)
   description = "List of subnet IDs for the fargate service."
+  default = []
 }
 
 variable "log_retention_in_days" {
@@ -87,17 +92,6 @@ variable "tags" {
   type        = map(string)
   description = "A map of AWS Tags to attach to each resource created"
   default     = {}
-}
-
-variable "image_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "interval" {
-  type        = string
-  description = "the time between invocations"
-  default     = "10 minutes"
 }
 
 variable "environment_variables" {
@@ -114,5 +108,6 @@ variable "secrets" {
 
 variable "source_code_hash" {
   type    = string
+  description = "The path to your deployment package. Used to detect changes requiring re-provisioning"
   default = null
 }
