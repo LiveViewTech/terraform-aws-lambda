@@ -1,7 +1,7 @@
 variable "name" {
-  type = string
+  type        = string
   description = "Name for your lambda function"
-  default = ""
+  default     = ""
 }
 
 variable "filename" {
@@ -41,9 +41,9 @@ variable "layers" {
 }
 
 variable "runtime" {
-  type    = string
+  type        = string
   description = "The runtime environment for your function. (e.g. python3.9)"
-  default = ""
+  default     = ""
 }
 
 variable "timeout" {
@@ -67,7 +67,7 @@ variable "vpc_id" {
 variable "role_permissions_boundary_arn" {
   type        = string
   description = "ARN of the IAM Role permissions boundary to place on each IAM role created."
-  default = ""
+  default     = ""
 }
 
 variable "image_uri" {
@@ -79,7 +79,7 @@ variable "image_uri" {
 variable "private_subnet_ids" {
   type        = list(string)
   description = "List of subnet IDs for the fargate service."
-  default = []
+  default     = []
 }
 
 variable "log_retention_in_days" {
@@ -107,7 +107,7 @@ variable "secrets" {
 }
 
 variable "source_code_hash" {
-  type    = string
+  type        = string
   description = "The path to your deployment package. Used to detect changes requiring re-provisioning"
-  default = null
+  default     = null
 }
