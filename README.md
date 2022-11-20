@@ -60,6 +60,7 @@ module "lambda" {
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of AWS Tags to attach to each resource created | `map(string)` | `{}` | no |
 | <a name="input_timeout"></a> [timeout](#input\_timeout) | The amount of time your Lambda Function has to run in seconds. | `number` | `30` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID | `string` | `""` | no |
+
 ## Outputs
 | Name | Description |
 |------|-------------|
