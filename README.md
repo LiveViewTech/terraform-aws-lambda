@@ -6,7 +6,7 @@ Terraform module to create and manage a AWS Lambda function created through eith
 ## Usage
 ```hcl
 module "lambda" {
-  source = "bitbucket.org/liveviewtech/terraform-aws-lambda.git?ref=v1"
+  source = "bitbucket.org/liveviewtech/terraform-aws-lambda.git?ref=v2"
 
   name = local.project_id
 
