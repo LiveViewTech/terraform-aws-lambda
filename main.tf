@@ -52,7 +52,7 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = var.source_code_hash
   function_name    = var.name
   handler          = var.handler
-  image_uri        = var.filename == null ? var.image_uri : null
+  image_uri        = var.image_uri
   memory_size      = var.memory_size
   package_type     = var.package_type
   role             = aws_iam_role.lambda.arn

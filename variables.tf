@@ -95,9 +95,9 @@ variable "image_tag" {
 }
 
 variable "interval" {
-  type    = string
+  type        = string
   description = "the time between invocations"
-  default = "10 minutes"
+  default     = "10 minutes"
 }
 
 variable "environment_variables" {
