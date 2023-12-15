@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
-    aws = "~>3"
+    aws = ">=3"
   }
 }
 
@@ -53,13 +53,13 @@ resource "aws_lambda_function" "lambda" {
   function_name    = var.name
   handler          = var.handler
   # image_uri        = var.image_uri
-  memory_size      = var.memory_size
-  package_type     = var.package_type
-  role             = aws_iam_role.lambda.arn
-  tags             = var.tags
-  timeout          = var.timeout
-  runtime          = var.runtime
-  architectures    = ["arm64"]
+  memory_size   = var.memory_size
+  package_type  = var.package_type
+  role          = aws_iam_role.lambda.arn
+  tags          = var.tags
+  timeout       = var.timeout
+  runtime       = var.runtime
+  architectures = ["arm64"]
 
   layers = concat([aws_lambda_layer_version.this.arn], var.layers)
 
