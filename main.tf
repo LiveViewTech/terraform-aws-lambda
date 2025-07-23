@@ -96,12 +96,6 @@ resource "aws_security_group" "this" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "this" {
-  name              = "/lambda/${var.name}"
-  retention_in_days = var.log_retention_in_days
-  tags              = var.tags
-}
-
 # === IAM ROLE === #
 
 data "aws_iam_policy_document" "lambda_assume_role" {
