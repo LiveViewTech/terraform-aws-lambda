@@ -7,11 +7,12 @@ terraform {
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
+data "aws_partition" "current" {}
 
 locals {
   secret_values          = [for k, v in var.secrets : v]
   has_secrets            = length(var.secrets) > 0
-  ssm_parameter_arn_base = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
+  ssm_parameter_arn_base = "arn:${data.aws_partition.current.partition}:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/"
   secrets_arns = [
     for param in distinct(flatten((local.secret_values))) :
     "${local.ssm_parameter_arn_base}${replace(param, "/^//", "")}"
@@ -147,5 +148,5 @@ resource "aws_iam_role_policy_attachment" "execution_role" {
 
 resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }

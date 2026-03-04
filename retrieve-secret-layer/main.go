@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	region    string
 	parameter string
 )
 
@@ -24,7 +23,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(5000)*time.Millisecond)
 	defer cancel()
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithRetryer(func() aws.Retryer {
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRetryer(func() aws.Retryer {
 		return retry.AddWithMaxAttempts(aws.NopRetryer{}, 1)
 	}))
 
@@ -50,7 +49,6 @@ func main() {
 }
 
 func getCommandLineArgs() {
-	flag.StringVar(&region, "region", "us-west-2", "AWS Region to use")
 	flag.StringVar(&parameter, "parameter", "", "The name for the requested parameter")
 	flag.Parse()
 }
