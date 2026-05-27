@@ -39,5 +39,4 @@ override.tf.json
 terraform.rc
 .terraform.lock.hcl
 *.pem
-Makefile
 secret-wrapper
